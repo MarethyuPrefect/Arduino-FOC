@@ -90,7 +90,6 @@ void loop() {
   // Arduino UNO loop  ~1kHz
   // Bluepill loop ~10kHz
   motor.loopFOC();
-
   // Motion control function
   // velocity, position or voltage (defined in motor.controller)
   // this function can be run at much lower frequency than loopFOC() function

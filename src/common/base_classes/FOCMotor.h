@@ -29,7 +29,8 @@ enum MotionControlType{
   velocity,//!< Velocity motion control
   angle,//!< Position/angle motion control
   velocity_openloop,
-  angle_openloop
+  angle_openloop,
+  angle_fb_ff // Angle motion control (without velocity loop) output is current setpoint including feedbforward.
 };
 
 /**
@@ -145,6 +146,7 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
+    float	torque_constant; //!< motor torque constant
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit
