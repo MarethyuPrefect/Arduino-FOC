@@ -227,6 +227,8 @@ int BLDCMotor::alignSensor() {
   return exit_flag;
 }
 
+
+
 // Encoder alignment the absolute zero angle
 // - to the index
 int BLDCMotor::absoluteZeroSearch() {

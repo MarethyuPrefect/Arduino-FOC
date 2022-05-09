@@ -10,10 +10,8 @@
 
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
-// magnetic sensor instance - I2C
-// MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
-// magnetic sensor instance - analog output
-// MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
+// instantiate the calibrated sensor object
+CalibratedSensor sensor_calibrated  = CalibratedSensor(sensor*);
 
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
@@ -32,44 +30,37 @@ Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
 void setup() {
-
-  // initialise magnetic sensor hardware
-  sensor.init();
-  // link the motor to the sensor
-  motor.linkSensor(&sensor);
-
+  // initalize calibrated sensor. This step includes the actual calibration
+  sensor_calibrated.init();
+  // Link motor to sensor
+  motor.linkSensor(&sensor_calibrated);
   // power supply voltage
   driver.voltage_power_supply = 12;
   driver.init();
   motor.linkDriver(&driver);
-
   // aligning voltage 
   motor.voltage_sensor_align = 5;
-
-  motor.torque_controller = TorqueControlType::foc_current;
-  motor.controller = MotionControlType::angle;
-
+  // set motion control loop to be used
+  motor.controller = MotionControlType::torque;
   // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
-
   // initialize motor
   motor.init();
+  // do sensor eccentricity calibration
+  sensor_calibrated.doCalibration();
   // align sensor and start FOC
   motor.initFOC();
-
+  
   // add target command T
   command.add('T', doTarget, "target voltage");
-
+  
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target voltage using serial terminal:"));
   _delay(1000);
 }
 
 void loop() {
-
-
-
 
 }
