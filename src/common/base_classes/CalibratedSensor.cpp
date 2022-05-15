@@ -1,22 +1,27 @@
-#include 'CalibrateSensor.h'
-
-/*
-CalibrateSensor(Sensor* sensor)
-sensor              - instance of original sensor object
-*/
-
-CalibrateSensor::CalibrateSensor(Sensor* sensor){
+#include "CalibratedSensor.h"
 
 
+// CalibratedSensor()
+// sensor              - instance of original sensor object
+// driver              - instance of the driver object
+
+
+CalibratedSensor::CalibratedSensor(Sensor& wrapped) : _wrapped(wrapped) {
+};
+
+void CalibratedSensor::update(){
+    _wrapped.update();
+    this->Sensor::update();
+};
+
+void Sensor::init() {
+    // assume wrapped sensor has already been initialized
+    this->Sensor::init(); // call superclass init
 }
 
-
-/*
-This function will return the calibrated angle using the LUT
-*/
-float getSensorAngle(){
+float CalibratedSensor::getSensorAngle(){
     // raw encoder count e.g. 0-16384 (14 bits encoder) 
-    rawCount = getRawCount();
+    int rawCount = _wrapped.getMechanicalAngle();
 
     // only use the lower 7 bits (0-128) 
     int lowerBits = (rawCount&0x007F);
@@ -31,22 +36,18 @@ float getSensorAngle(){
     float interpolatedOffset = ((127.0f-lowerBits)/127.0f)*y0 + (lowerBits/127.0f)*y1; 
 
     // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
-    int calibratedAngle = (((rawCount+interpolatedOffset)/(float)cpr) * _2PI) ; 
+    float calibratedAngle = (((rawCount+interpolatedOffset)/(float)CPR) * _2PI) ; 
 
     // return calibrated angle in radians
     return calibratedAngle
 }
 
-
-/*
-This function will return the regular, uncalibrated angle
-*/
-float getUncalibratedAngle(){
-    int angle = ((getRawCount()/(float)cpr) * _2PI); 
-    return angle
-}
-
-void doCalibration() {
+void CalibratedSensor::calibrate(BLDCMotor& motor){
+    float elecAngle = 0;
+    bool isMeasuring = true;
+    int phaseVoltageQ = 4;
+    
+    _motor = motor;
 
     // start with zero offset
     motor.zero_electric_angle = 0; // Set position sensor offset

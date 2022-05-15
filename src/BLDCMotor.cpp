@@ -1,6 +1,4 @@
 #include "BLDCMotor.h"
-#include "../src/common/feedforward.h"
-#include "../src/calibrations/cogging.h"
 
 
 // BLDCMotor( int pp , float R)
@@ -359,27 +357,6 @@ void BLDCMotor::move(float new_target) {
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
       // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
-      // if torque controlled through voltage
-      if(torque_controller == TorqueControlType::voltage){
-        // use voltage if phase-resistance not provided
-        if(!_isset(phase_resistance))  voltage.q = current_sp;
-        else  voltage.q = current_sp*phase_resistance;
-        voltage.d = 0;
-      }
-      break;
-    case MotionControlType::angle_fb_ff:
-      /*
-        This controller will be a position feedback loop including current feedforward
-        ControllerOutput = FB_Torque + Acceleration_FF_Torque + Cogging_FF_Torque
-        
-        Current setpoint shall be ControllerOutput [Nm] *MotorConstant [A/Nm] = [A]
-
-      */
-      // angle set point
-      shaft_angle_sp = target;
-      // calculate velocity set point
-      current_sp = (P_angle( shaft_angle_sp - shaft_angle )+FF_ACCELERATION+FF_COGGING[shaft_angle_sp])*Ki;
-      // calculate the torque command - sensor precision: this calculation is ok, but based on bad value from previous calculation
       // if torque controlled through voltage
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
