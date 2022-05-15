@@ -54,6 +54,7 @@ protected:
     * delegate instance of Sensor class
     */
     Sensor& _wrapped;
+
 };
 
 #endif

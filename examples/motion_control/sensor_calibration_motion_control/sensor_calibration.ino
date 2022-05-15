@@ -10,15 +10,12 @@
 
 // magnetic sensor instance - SPI
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
-// instantiate the calibrated sensor object
-CalibratedSensor sensor_calibrated  = CalibratedSensor(sensor*);
-
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
-// Stepper motor & driver instance
-//StepperMotor motor = StepperMotor(50);
-//StepperDriver4PWM driver = StepperDriver4PWM(9, 5, 10, 6,  8);
+
+// instantiate the calibrated sensor object
+CalibratedSensor sensor_calibrated  = CalibratedSensor(sensor);
 
 // inline current sensor instance
 InlineCurrentSense current_sense = InlineCurrentSense(0.001, 50.0, A0, A1);
@@ -30,10 +27,10 @@ Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
 void setup() {
-  // initalize calibrated sensor. This step includes the actual calibration
-  sensor_calibrated.init();
+  sensor.init();
+
   // Link motor to sensor
-  motor.linkSensor(&sensor_calibrated);
+  motor.linkSensor(&sensor);
   // power supply voltage
   driver.voltage_power_supply = 12;
   driver.init();
@@ -48,8 +45,13 @@ void setup() {
   motor.useMonitoring(Serial);
   // initialize motor
   motor.init();
+
   // do sensor eccentricity calibration
-  sensor_calibrated.doCalibration();
+  sensor_calibrated.calibrate(motor);
+  // initalize calibrated sensor. 
+  sensor_calibrated.init();
+  motor.linkSensor(sensor_calibrated);
+
   // align sensor and start FOC
   motor.initFOC();
   

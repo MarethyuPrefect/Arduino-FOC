@@ -3,8 +3,6 @@
 
 // CalibratedSensor()
 // sensor              - instance of original sensor object
-// driver              - instance of the driver object
-
 
 CalibratedSensor::CalibratedSensor(Sensor& wrapped) : _wrapped(wrapped) {
 };
@@ -69,13 +67,13 @@ while(isMeasuring)
           motor.setPhaseVoltage(phaseVoltageQ, 0, elecAngle);
           _delay(1);
         }
-        sensor.update();
-        theta_actual = sensor.getUncalibratedAngle();
-        error_f[i] = elecAngle/pole_pairs - theta_actual;
+        _wrapped.update();
+        theta_actual = _wrapped.getMechanicalAngle();
+        error_f[i] = elecAngle/NPP - theta_actual;
         raw_f[i] = theta_actual;
 
         // only temporary printing for debugging
-        Serial.print(elecAngle/(pole_pairs),5);
+        Serial.print(elecAngle/(NPP),5);
         Serial.print("\t");
         Serial.print(theta_actual,5);
         Serial.print("\t");
@@ -94,13 +92,13 @@ while(isMeasuring)
           motor.setPhaseVoltage(phaseVoltageQ, 0 ,elecAngle);
           _delay(1);
         }
-        sensor.update();
-        theta_actual = sensor.getUncalibratedAngle();
-        error_b[i] = elecAngle/pole_pairs - theta_actual;
+        _wrapped.update();
+        theta_actual = _wrapped.getMechanicalAngle();
+        error_b[i] = elecAngle/NPP - theta_actual;
         raw_b[i] = theta_actual;
 
         // only temporary printing for debugging
-        Serial.print(elecAngle/(pole_pairs),5);
+        Serial.print(elecAngle/(NPP),5);
         Serial.print("\t");
         Serial.print(theta_actual,5);
         Serial.print("\t");
@@ -157,20 +155,14 @@ while(isMeasuring)
         if(ind > (n_lut-1)){ 
             ind -= n_lut;
         }
-        lut[ind] = (int) ((error_filt[i*NPP] - mean)*(CPR/(2.0f*PI)));
+        calibrationLut[ind] = (int) ((error_filt[i*NPP] - mean)*(CPR/(2.0f*PI)));
         Serial.print(ind);
         Serial.print('\t');
-        Serial.println(lut[ind]);
+        Serial.println(calibrationLut[ind]);
         _delay(1);
     }
 
-    // how does this LUT end up in the getSensorAngle function???
-    writeLut(lut);
 }
 
-void writeLUT(int newLut[128]){
 
-    // what is the use of this function? Why can I not just pass 'lut' from the doCalibration function?
-    memcpy(calibrationLut, newLut, sizeof(calibrationLut));
-}
 

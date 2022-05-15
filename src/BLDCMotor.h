@@ -70,7 +70,7 @@ class BLDCMotor: public FOCMotor
     float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
     float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
-    friend class CalibrateSensor;
+    friend class CalibratedSensor;
 
 
   private:
