@@ -1,28 +1,19 @@
 #include 'CalibrateSensor.h'
 
-// CalibratedSensor(Sensor* sensor, Driver* driver)
-// sensor              - instance of original sensor object
-// driver              - instance of the driver object
-CalibratedSensor::CalibratedSensor(Sensor* sensor, Driver* driver){
+/*
+CalibrateSensor(Sensor* sensor)
+sensor              - instance of original sensor object
+*/
+
+CalibrateSensor::CalibrateSensor(Sensor* sensor){
+
 
 }
 
 
-void Sensor::init() {
-    // initialize all the internal variables of Sensor to ensure a "smooth" startup (without a 'jump' from zero)
-    getSensorAngle(); // call once
-    delayMicroseconds(1);
-    vel_angle_prev = getSensorAngle(); // call again
-    vel_angle_prev_ts = _micros();
-    delay(1);
-    getSensorAngle(); // call once
-    delayMicroseconds(1);
-    angle_prev = getSensorAngle(); // call again
-    angle_prev_ts = _micros();
-
-    doCalibration();
-}
-
+/*
+This function will return the calibrated angle using the LUT
+*/
 float getSensorAngle(){
     // raw encoder count e.g. 0-16384 (14 bits encoder) 
     rawCount = getRawCount();
@@ -46,16 +37,17 @@ float getSensorAngle(){
     return calibratedAngle
 }
 
+
+/*
+This function will return the regular, uncalibrated angle
+*/
 float getUncalibratedAngle(){
     int angle = ((getRawCount()/(float)cpr) * _2PI); 
     return angle
 }
 
 void doCalibration() {
-    float elecAngle = 0;
-    bool isMeasuring = true;
-    int phaseVoltageQ = 4;
-    
+
     // start with zero offset
     motor.zero_electric_angle = 0; // Set position sensor offset
    ///Set voltage angle to zero, wait for rotor position to settle

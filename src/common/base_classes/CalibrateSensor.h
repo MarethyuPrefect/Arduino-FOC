@@ -5,7 +5,7 @@ class CalibrateSensor{
 
 public:
     // constructor of class with pointer to base class sensor and driver
-    CalibrateSensor(Sensor* sensor, Driver* driver);
+    CalibrateSensor(Sensor* sensor);
     
     // This function returns the interpolated angle after calibration
     float getSensorAngle() override;
@@ -27,10 +27,9 @@ private:
 
     const int  n_lut = 128;
     calibrationLut = new int[n_lut]();   
-    bool isMeasuring = true;
     float theta_actual;
     float elecAngle = 0;
-    int NPP = 11;
+    int NPP = motor.pole_pairs;
     const int n = 128*NPP;                                                      // number of positions to be sampled per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
     const int n2 = 40;                                                          // increments between saved samples (for smoothing motion)
     float deltaElectricalAngle = 2*PI*NPP/(n*n2);      
@@ -43,9 +42,15 @@ private:
     float*  error_filt = new float[n]();
     float cogging_current[window] = {0};  
     int CPR = 16384;
+
+    float elecAngle = 0;
+    bool isMeasuring = true;
+    int phaseVoltageQ = 4;
+    
+
+    bool isMeasuring = true;
     bool isHoming = true;
     bool isCalibrating = true;
-
 
 
 }
