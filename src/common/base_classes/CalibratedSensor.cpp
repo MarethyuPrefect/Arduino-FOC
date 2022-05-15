@@ -39,7 +39,7 @@ float CalibratedSensor::getSensorAngle(){
     float calibratedAngle = (((rawCount+interpolatedOffset)/(float)CPR) * _2PI) ; 
 
     // return calibrated angle in radians
-    return calibratedAngle
+    return calibratedAngle;
 }
 
 void CalibratedSensor::calibrate(BLDCMotor& motor){
@@ -47,8 +47,6 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
     bool isMeasuring = true;
     int phaseVoltageQ = 4;
     
-    _motor = motor;
-
     // start with zero offset
     motor.zero_electric_angle = 0; // Set position sensor offset
    ///Set voltage angle to zero, wait for rotor position to settle
