@@ -12,10 +12,38 @@ void CalibratedSensor::update(){
     this->Sensor::update();
 };
 
-void Sensor::init() {
+void CalibratedSensor::init() {
     // assume wrapped sensor has already been initialized
     this->Sensor::init(); // call superclass init
 }
+
+float CalibratedSensor::getSensorAngle(){
+    // raw encoder position e.g. 0-2PI
+    int rawAngle = _wrapped.getMechanicalAngle();
+
+    // index of the bucket that rawAngle is part of. 
+    // e.g. rawAngle = 0 --> bucketIndex = 0.
+    // e.g. rawAngle = 2PI --> bucketIndex = 128.
+    int bucketIndex = floor(rawAngle/_2PI/n_lut);
+    
+    // Extract the lower and upper LUT value in counts
+    int y0 = calibrationLut[bucketIndex]; 
+    int y1 = calibrationLut[(bucketIndex+1)%128]; 
+    
+    // Linear Interpolation Between LUT values y0 and y1. 
+    // If  = 0, interpolated offset = y0
+    // If lowerBits = 127, interpolated offset = y1
+    float interpolatedOffset = ((127.0f-bucketIndex)/127.0f)*y0 + (bucketIndex/127.0f)*y1; 
+
+    // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
+    float calibratedAngle = rawAngle+interpolatedOffset; 
+
+    // return calibrated angle in radians
+    return calibratedAngle;
+}
+
+/*
+old interpolation strategy based on raw counts
 
 float CalibratedSensor::getSensorAngle(){
     // raw encoder count e.g. 0-16384 (14 bits encoder) 
@@ -39,6 +67,7 @@ float CalibratedSensor::getSensorAngle(){
     // return calibrated angle in radians
     return calibratedAngle;
 }
+*/
 
 void CalibratedSensor::calibrate(BLDCMotor& motor){
     float elecAngle = 0;
