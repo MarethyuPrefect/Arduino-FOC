@@ -70,11 +70,6 @@ class BLDCMotor: public FOCMotor
     float Ua, Ub, Uc;//!< Current phase voltages Ua,Ub and Uc set to motor
     float	Ualpha, Ubeta; //!< Phase voltages U alpha and U beta used for inverse Park and Clarke transform
 
-    friend class CalibratedSensor;
-
-
-  private:
-    // FOC methods 
     /**
     * Method using FOC to set Uq to the motor at the optimal angle
     * Heart of the FOC algorithm
@@ -84,6 +79,10 @@ class BLDCMotor: public FOCMotor
     * @param angle_el current electrical angle of the motor
     */
     void setPhaseVoltage(float Uq, float Ud, float angle_el);
+
+  private:
+    // FOC methods 
+
     /** Sensor alignment to electrical 0 angle of the motor */
     int alignSensor();
     /** Current sense and motor phase alignment */

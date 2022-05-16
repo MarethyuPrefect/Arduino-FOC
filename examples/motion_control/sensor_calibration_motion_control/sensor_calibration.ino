@@ -15,7 +15,7 @@ BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
 
 // instantiate the calibrated sensor object
-CalibratedSensor sensor_calibrated  = CalibratedSensor(sensor);
+CalibratedSensor sensor_calibrated{sensor};
 
 // inline current sensor instance
 InlineCurrentSense current_sense = InlineCurrentSense(0.001, 50.0, A0, A1);

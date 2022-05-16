@@ -13,6 +13,11 @@ public:
 
     virtual void update() override;
 
+    /**
+    * Calibrate method computes the LUT for the correction
+    */
+    virtual void calibrate(BLDCMotor& motor);
+
     // all variables for LUT & calibration yet to be fixed
     const int  n_lut = 128;
     int* calibrationLut = new int[n_lut]();   
@@ -46,10 +51,6 @@ protected:
     * init method of CaibratedSensor - call after calibration
     */
     virtual void init() override;
-    /**
-    * Calibrate method computes the LUT for the correction
-    */
-    virtual void calibrate(BLDCMotor& motor);
     /**
     * delegate instance of Sensor class
     */
