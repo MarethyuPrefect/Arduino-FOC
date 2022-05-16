@@ -3,7 +3,6 @@
 
 // CalibratedSensor()
 // sensor              - instance of original sensor object
-
 CalibratedSensor::CalibratedSensor(Sensor& wrapped) : _wrapped(wrapped) {
 };
 

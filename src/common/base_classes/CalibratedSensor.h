@@ -20,7 +20,7 @@ public:
 
     // all variables for LUT & calibration yet to be fixed
     const int  n_lut = 128;
-    int* calibrationLut = new int[n_lut]();   
+    float* calibrationLut = new float[n_lut]();   
     bool isMeasuring = true;
     float theta_actual;
     float elecAngle = 0;
@@ -29,9 +29,9 @@ public:
     const int n2 = 40;                                                          // increments between saved samples (for smoothing motion)
     float deltaElectricalAngle = _2PI*NPP/(n*n2);      
     float* error_f  = new float[n]();                                                     // error vector rotating forwards
-    int* raw_f = new int[n]();  
+    float* raw_f = new float[n]();  
     float* error_b  = new float[n]();                                                     // error vector rotating forwards
-    int* raw_b = new int[n]();  
+    float* raw_b = new float[n]();  
     float* error = new float[n]();
     const int window = 128;
     float*  error_filt = new float[n]();
