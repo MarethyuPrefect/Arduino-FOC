@@ -112,5 +112,6 @@ void loop() {
 #include "current_sense/LowsideCurrentSense.h"
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
+#include "common/base_classes/CalibratedSensor.h"
 
 #endif
