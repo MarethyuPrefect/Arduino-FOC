@@ -19,13 +19,13 @@ void CalibratedSensor::init() {
 
 float CalibratedSensor::getSensorAngle(){
     // raw encoder position e.g. 0-2PI
-    int rawAngle = _wrapped.getMechanicalAngle();
+    float rawAngle = _wrapped.getMechanicalAngle();
 
     // index of the bucket that rawAngle is part of. 
     // e.g. rawAngle = 0 --> bucketIndex = 0.
     // e.g. rawAngle = 2PI --> bucketIndex = 128.
     int bucketIndex = floor(rawAngle/_2PI/n_lut);
-    float remainder = alpha % (_2PI/n_lut)
+    float remainder = rawAngle - ((_2PI/n_lut)*bucketIndex);
 
     // Extract the lower and upper LUT value in counts
     int y0 = calibrationLut[bucketIndex]; 
