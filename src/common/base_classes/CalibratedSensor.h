@@ -33,7 +33,7 @@ public:
     float* error_b  = new float[n]();                                                     // error vector rotating forwards
     float* raw_b = new float[n]();  
     float* error = new float[n]();
-    const int window = 128;
+    const int window = 128; // moving avarage window
     float*  error_filt = new float[n]();
     int CPR = 16384;
     bool isHoming = true;

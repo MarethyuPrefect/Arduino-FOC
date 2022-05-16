@@ -173,18 +173,18 @@ while(isMeasuring)
         }
         mean += error_filt[i]/n;
     }
-    int raw_offset = (raw_f[0] + raw_b[n-1])/2;                   
+    float raw_offset = (raw_f[0] + raw_b[n-1])/2;                   
  
 
     Serial.println(" Encoder non-linearity compensation table");
     Serial.println(" Lookup Index : Lookup Value");
     // Build Look Up Table
     for (int i = 0; i<n_lut; i++){                                          
-        int ind = (raw_offset>>7) + i;
+        int ind = floor(raw_offset/_2PI/n_lut) + i;
         if(ind > (n_lut-1)){ 
             ind -= n_lut;
         }
-        calibrationLut[ind] = (int) (error_filt[i*NPP] - mean);
+        calibrationLut[ind] = (float) (error_filt[i*NPP] - mean);
         Serial.print(ind);
         Serial.print('\t');
         Serial.println(calibrationLut[ind]);
