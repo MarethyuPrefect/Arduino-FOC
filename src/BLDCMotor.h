@@ -19,9 +19,15 @@ class BLDCMotor: public FOCMotor
      BLDCMotor class constructor
      @param pp pole pairs number
      @param R  motor phase resistance
+<<<<<<< HEAD
      @param Ki motor constant
      */ 
     BLDCMotor(int pp,  float R = NOT_SET, float Ki = 0);
+=======
+     @param KV  motor KV rating (1/K_bemf) - rpm/V
+     */ 
+    BLDCMotor(int pp,  float R = NOT_SET, float KV = NOT_SET);
+>>>>>>> master
     
     /**
      * Function linking a motor and a foc driver 

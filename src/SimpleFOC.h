@@ -104,14 +104,20 @@ void loop() {
 #include "sensors/MagneticSensorAnalog.h"
 #include "sensors/MagneticSensorPWM.h"
 #include "sensors/HallSensor.h"
+#include "sensors/GenericSensor.h"
 #include "drivers/BLDCDriver3PWM.h"
 #include "drivers/BLDCDriver6PWM.h"
 #include "drivers/StepperDriver4PWM.h"
 #include "drivers/StepperDriver2PWM.h"
 #include "current_sense/InlineCurrentSense.h"
 #include "current_sense/LowsideCurrentSense.h"
+#include "current_sense/GenericCurrentSense.h"
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
+<<<<<<< HEAD
 #include "common/base_classes/CalibratedSensor.h"
+=======
+#include "communication/SimpleFOCDebug.h"
+>>>>>>> master
 
 #endif
