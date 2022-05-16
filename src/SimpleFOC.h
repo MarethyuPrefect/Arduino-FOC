@@ -114,10 +114,7 @@ void loop() {
 #include "current_sense/GenericCurrentSense.h"
 #include "communication/Commander.h"
 #include "communication/StepDirListener.h"
-<<<<<<< HEAD
 #include "common/base_classes/CalibratedSensor.h"
-=======
 #include "communication/SimpleFOCDebug.h"
->>>>>>> master
 
 #endif

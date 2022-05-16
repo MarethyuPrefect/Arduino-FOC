@@ -24,22 +24,12 @@
 /**
  *  Motiron control type
  */
-<<<<<<< HEAD
-enum MotionControlType{
-  torque,//!< Torque control
-  velocity,//!< Velocity motion control
-  angle,//!< Position/angle motion control
-  velocity_openloop,
-  angle_openloop,
-  angle_fb_ff // Angle motion control (without velocity loop) output is current setpoint including feedbforward.
-=======
 enum MotionControlType : uint8_t {
   torque            = 0x00,     //!< Torque control
   velocity          = 0x01,     //!< Velocity motion control
   angle             = 0x02,     //!< Position/angle motion control
   velocity_openloop = 0x03,
   angle_openloop    = 0x04
->>>>>>> master
 };
 
 /**
@@ -171,11 +161,7 @@ class FOCMotor
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
-<<<<<<< HEAD
-    float	torque_constant; //!< motor torque constant
-=======
     float KV_rating; //!< motor KV rating
->>>>>>> master
 
     // limiting variables
     float voltage_limit; //!< Voltage limitting variable - global limit

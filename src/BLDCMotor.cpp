@@ -5,12 +5,8 @@
 // BLDCMotor( int pp , float R)
 // - pp            - pole pair number
 // - R             - motor phase resistance
-<<<<<<< HEAD
-BLDCMotor::BLDCMotor(int pp, float _R, float Ki)
-=======
 // - KV            - motor kv rating (rmp/v)
 BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
->>>>>>> master
 : FOCMotor()
 {
   // save pole pairs number
