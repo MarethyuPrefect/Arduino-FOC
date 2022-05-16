@@ -18,8 +18,6 @@ BLDCMotor::BLDCMotor(int pp, float _R, float _KV)
 
   // torque control type is voltage by default
   torque_controller = TorqueControlType::voltage;
-  // 
-  torque_constant = Ki;
 }
 
 
