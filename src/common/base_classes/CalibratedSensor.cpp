@@ -25,15 +25,16 @@ float CalibratedSensor::getSensorAngle(){
     // e.g. rawAngle = 0 --> bucketIndex = 0.
     // e.g. rawAngle = 2PI --> bucketIndex = 128.
     int bucketIndex = floor(rawAngle/_2PI/n_lut);
-    
+    float remainder = alpha % (_2PI/n_lut)
+
     // Extract the lower and upper LUT value in counts
     int y0 = calibrationLut[bucketIndex]; 
     int y1 = calibrationLut[(bucketIndex+1)%128]; 
     
-    // Linear Interpolation Between LUT values y0 and y1. 
-    // If  = 0, interpolated offset = y0
-    // If lowerBits = 127, interpolated offset = y1
-    float interpolatedOffset = ((127.0f-bucketIndex)/127.0f)*y0 + (bucketIndex/127.0f)*y1; 
+    // Linear Interpolation Between LUT values y0 and y1 using the remainder
+    // If remainder = 0, interpolated offset = y0
+    // If remainder = 2PI/n_lut, interpolated offset = y1
+    float interpolatedOffset = (((_2PI/n_lut)-remainder)/(_2PI/n_lut))*y0 + (remainder/(_2PI/n_lut))*y1; 
 
     // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
     float calibratedAngle = rawAngle+interpolatedOffset; 
@@ -184,7 +185,7 @@ while(isMeasuring)
         if(ind > (n_lut-1)){ 
             ind -= n_lut;
         }
-        calibrationLut[ind] = (int) ((error_filt[i*NPP] - mean)*(CPR/(2.0f*PI)));
+        calibrationLut[ind] = (int) (error_filt[i*NPP] - mean);
         Serial.print(ind);
         Serial.print('\t');
         Serial.println(calibrationLut[ind]);
