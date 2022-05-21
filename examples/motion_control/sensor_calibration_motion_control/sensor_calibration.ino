@@ -9,32 +9,38 @@
 #include <SimpleFOC.h>
 
 // magnetic sensor instance - SPI
-MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, 10);
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5048_SPI, PB6);
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
-BLDCDriver3PWM driver = BLDCDriver3PWM(9, 5, 6, 8);
+BLDCDriver3PWM driver = BLDCDriver3PWM(PB4,PC7,PB10,PA9);
 
 // instantiate the calibrated sensor object
 CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);
 
 // voltage set point variable
-float target_voltage = 2;
+float target_voltage = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
 void setup() {
+
+  SPI.setMISO(PB14);
+  SPI.setMOSI(PB15);
+  SPI.setSCLK(PB13);
+
   sensor.init();
   // Link motor to sensor
   motor.linkSensor(&sensor);
   // power supply voltage
-  driver.voltage_power_supply = 12;
+  driver.voltage_power_supply = 20;
   driver.init();
   motor.linkDriver(&driver);
   // aligning voltage 
   motor.voltage_sensor_align = 5;
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
+
   // use monitoring with serial 
   Serial.begin(115200);
   // comment out if not needed
@@ -42,12 +48,14 @@ void setup() {
   // initialize motor
   motor.init();
 
-  // do sensor eccentricity calibration
+  // Running calibration
   sensor_calibrated.calibrate(motor); 
+  // Linking sensor to motor object
+  motor.linkSensor(&sensor_calibrated);
 
-  // align sensor and start FOC
+  // calibrated init FOC
   motor.initFOC();
-  
+
   // add target command T
   command.add('T', doTarget, "target voltage");
   
@@ -72,6 +80,5 @@ void loop() {
   
   // user communication
   command.run();
-
 
 }

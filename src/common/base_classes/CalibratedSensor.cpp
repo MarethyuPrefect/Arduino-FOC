@@ -24,21 +24,21 @@ float CalibratedSensor::getSensorAngle(){
     // index of the bucket that rawAngle is part of. 
     // e.g. rawAngle = 0 --> bucketIndex = 0.
     // e.g. rawAngle = 2PI --> bucketIndex = 128.
-    int bucketIndex = floor(rawAngle/_2PI/n_lut);
+    int bucketIndex = floor(rawAngle/(_2PI/n_lut));
     float remainder = rawAngle - ((_2PI/n_lut)*bucketIndex);
 
     // Extract the lower and upper LUT value in counts
-    int y0 = calibrationLut[bucketIndex]; 
-    int y1 = calibrationLut[(bucketIndex+1)%128]; 
+    float y0 = calibrationLut[bucketIndex]; 
+    float y1 = calibrationLut[(bucketIndex+1)%128]; 
     
     // Linear Interpolation Between LUT values y0 and y1 using the remainder
     // If remainder = 0, interpolated offset = y0
     // If remainder = 2PI/n_lut, interpolated offset = y1
     float interpolatedOffset = (((_2PI/n_lut)-remainder)/(_2PI/n_lut))*y0 + (remainder/(_2PI/n_lut))*y1; 
 
-    // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
-    float calibratedAngle = rawAngle+interpolatedOffset; 
 
+    // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
+    float calibratedAngle = rawAngle-interpolatedOffset; 
     // return calibrated angle in radians
     return calibratedAngle;
 }
@@ -71,10 +71,8 @@ float CalibratedSensor::getSensorAngle(){
 */
 
 void CalibratedSensor::calibrate(BLDCMotor& motor){
-    float elecAngle = 0;
-    bool isMeasuring = true;
-    int phaseVoltageQ = 4;
     
+    Serial.println("Calibrating Sensor.");
     // start with zero offset
     motor.zero_electric_angle = 0; // Set position sensor offset
    ///Set voltage angle to zero, wait for rotor position to settle
@@ -82,6 +80,13 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
         motor.setPhaseVoltage(phaseVoltageQ, 0, elecAngle);
          _delay(0.1);
     }
+
+motor.setPhaseVoltage(phaseVoltageQ, 0, elecAngle);
+_delay(1000);
+_wrapped.update();
+float theta_init = _wrapped.getAngle();
+float theta_absolute_init = _wrapped.getMechanicalAngle();
+float theta_absolute_post;
 
 // Loop over different electrical angles, once forward, once backward
 // store actual position and error as compared to electrical angle
@@ -98,7 +103,8 @@ while(isMeasuring)
           _delay(1);
         }
         _wrapped.update();
-        theta_actual = _wrapped.getMechanicalAngle();
+        theta_actual = _wrapped.getAngle()-theta_init;
+        // if overflow happened track it as full rotation
         error_f[i] = elecAngle/NPP - theta_actual;
         raw_f[i] = theta_actual;
 
@@ -123,7 +129,7 @@ while(isMeasuring)
           _delay(1);
         }
         _wrapped.update();
-        theta_actual = _wrapped.getMechanicalAngle();
+        theta_actual = _wrapped.getAngle()-theta_init;
         error_b[i] = elecAngle/NPP - theta_actual;
         raw_b[i] = theta_actual;
 
@@ -133,7 +139,11 @@ while(isMeasuring)
         Serial.print(theta_actual,5);
         Serial.print("\t");
         Serial.println(error_b[i],5);
+
     }
+    _wrapped.update();
+    theta_absolute_post = _wrapped.getMechanicalAngle();
+
     // done with the measurement
     isMeasuring=false;
     motor.setPhaseVoltage(0, 0, 0);
@@ -149,9 +159,9 @@ while(isMeasuring)
     offset = fmod(offset*NPP, 2*PI);                                        
         
     // Set the avarage electrical offset. Around this avarage offset the LUT will compensante
-    motor.zero_electric_angle = offset;                            
-    Serial.println("Average Electrical Angle Offset: ");
-    Serial.println(offset);
+    //motor.zero_electric_angle = offset;                            
+    //Serial.println("Average Electrical Angle Offset: ");
+    //Serial.println(offset);
 
     /// Perform filtering to linearize position sensor eccentricity
     /// FIR n-sample average, where n = number of samples in one electrical cycle
@@ -174,23 +184,29 @@ while(isMeasuring)
         }
         mean += error_filt[i]/n;
     }
-    float raw_offset = (raw_f[0] + raw_b[n-1])/2;                   
- 
+
+    //
+    //float raw_offset = (raw_f[0] + raw_b[n-1])/2;                   
+    float raw_offset = (theta_absolute_init+theta_absolute_post)/2;                   
+    int calibIndex = floor(raw_offset/(_2PI/n_lut));
 
     Serial.println(" Encoder non-linearity compensation table");
     Serial.println(" Lookup Index : Lookup Value");
     // Build Look Up Table
     for (int i = 0; i<n_lut; i++){                                          
-        int ind = floor(raw_offset/_2PI/n_lut) + i;
+        int ind =  calibIndex + i;
         if(ind > (n_lut-1)){ 
             ind -= n_lut;
         }
         calibrationLut[ind] = (float) (error_filt[i*NPP] - mean);
         Serial.print(ind);
         Serial.print('\t');
-        Serial.println(calibrationLut[ind]);
+        Serial.println(calibrationLut[ind],5);
         _delay(1);
     }
+
+  motor.zero_electric_angle  = NOT_SET;
+  Serial.println("Calibrating Sensor Done.");
 
 }
 
