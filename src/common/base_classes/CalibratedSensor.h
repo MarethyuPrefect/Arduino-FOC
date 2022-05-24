@@ -22,8 +22,8 @@ public:
     */
     virtual void calibrate(BLDCMotor& motor);
 
-
-
+    float* calibrationLut = new float[n_lut]();
+  
 
 protected:
 
@@ -49,7 +49,7 @@ protected:
     // Hardware related
     int CPR = 16384;                                    // number of counts per revolution --> to be retrieved from Sensor instance
     int NPP = 11;                                       // number of pole pairs --> to be retrieved from BLDC motor --> to be checked            
-    int phaseVoltageQ = 5;                              // voltage to run the calibration with
+    int phaseVoltageQ = 6;                              // voltage to run the calibration with
         
     const int n = 128*NPP;                              // number of positions to be sampled per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
     const int n2 = 40;                                  // increments between saved samples (for smoothing motion)
@@ -58,7 +58,6 @@ protected:
 
     // all variables for LUT & calibration yet to be fixed
     const int  n_lut { 128 } ;                             // lut size, currently constant
-    float* calibrationLut = new float[n_lut]();         // pointer to calibrationLut
     float* error_f  = new float[n]();                   // pointer to error array rotating forwards
     float* raw_f = new float[n]();                      // pointer to raw forward position
     float* error_b  = new float[n]();                   // pointer to error array rotating forwards
@@ -71,6 +70,11 @@ protected:
     bool isMeasuring = true;
     bool isHoming = true;
 
+    float elec_angle = 0.0;
+    float theta_absolute_post = 0.0;
+    float theta_absolute_init = 0.0;
+    float theta_init = 0.0;
+    float avg_elec_angle = 0.0;
 };
 
 #endif

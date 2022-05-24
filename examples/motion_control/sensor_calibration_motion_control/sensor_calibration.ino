@@ -18,9 +18,10 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(PB4,PC7,PB10,PA9);
 CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);
 
 // voltage set point variable
-float target_voltage = 0;
+float target_voltage = 2;
 // instantiate the commander
 Commander command = Commander(Serial);
+
 void doTarget(char* cmd) { command.scalar(&target_voltage, cmd); }
 
 void setup() {
@@ -38,6 +39,7 @@ void setup() {
   motor.linkDriver(&driver);
   // aligning voltage 
   motor.voltage_sensor_align = 5;
+  motor.voltage_limit = 20;
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
 
@@ -50,6 +52,8 @@ void setup() {
 
   // Running calibration
   sensor_calibrated.calibrate(motor); 
+
+  //Serial.println("Calibrating Sensor Done.");
   // Linking sensor to motor object
   motor.linkSensor(&sensor_calibrated);
 
@@ -66,17 +70,25 @@ void setup() {
 
 void loop() {
 
-  // main FOC algorithm function
-  // the faster you run this function the better
-  // Arduino UNO loop  ~1kHz
-  // Bluepill loop ~10kHz 
-  motor.loopFOC();
 
-  // Motion control function
-  // velocity, position or voltage (defined in motor.controller)
-  // this function can be run at much lower frequency than loopFOC() function
-  // You can also use motor.move() and set the motor.target in the code
-  motor.move(target_voltage);
+  // running script to measure zero electrical angle at different positions. Should reproduce very well as a result of the calibration.
+  int j = 0;
+  for(int i = 0; i<100; i+=1)
+  {
+      motor.zero_electric_angle  = NOT_SET;
+      motor.initFOC();
+      _delay(500);
+      Serial.println(motor.zero_electric_angle,4);
+      while (j < 1000)
+      {
+        motor.loopFOC();
+        motor.move(target_voltage);
+        j+=1;
+      }
+      j=0;
+      _delay(500);
+
+  } 
   
   // user communication
   command.run();
