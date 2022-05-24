@@ -105,7 +105,7 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
             // storing the normalized angle every time the electrical angle 3PI/2 to calculate average zero electrical angle
             if(i==(k*128+96))
                 {
-                    _delay(500);
+                    _delay(50);
                     avg_elec_angle += _normalizeAngle(_wrapped.getMechanicalAngle()*NPP);
                     k += 1;
                 }
