@@ -38,6 +38,7 @@ float CalibratedSensor::getSensorAngle(){
     // If remainder = 0, interpolated offset = y0
     // If remainder = 2PI/n_lut, interpolated offset = y1
     float interpolatedOffset = (((_2PI/n_lut)-remainder)/(_2PI/n_lut))*y0 + (remainder/(_2PI/n_lut))*y1; 
+    //Serial.print(interpolatedOffset,5);
 
     // add offset to the raw sensor count. Divide multiply by 2PI/CPR to get radians
     float calibratedAngle = rawAngle+interpolatedOffset; 
@@ -57,6 +58,48 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
     // start with zero offset
     motor.zero_electric_angle = 0; // Set position sensor offset
     
+   
+    // find natural direction
+    // move one electrical revolution forward
+    for (int i = 0; i <=500; i++ ) {
+      float angle = _3PI_2 + _2PI * i / 500.0f;
+      motor.setPhaseVoltage(phaseVoltageQ, 0,  angle);
+        _wrapped.update();
+      _delay(2);
+    }
+    // take and angle in the middle
+    _wrapped.update();
+    float mid_angle = _wrapped.getAngle();
+    // move one electrical revolution backwards
+    for (int i = 500; i >=0; i-- ) {
+      float angle = _3PI_2 + _2PI * i / 500.0f ;
+      motor.setPhaseVoltage(phaseVoltageQ, 0,  angle);
+        _wrapped.update();
+      _delay(2);
+    }
+    _wrapped.update();
+    float end_angle = _wrapped.getAngle();
+    motor.setPhaseVoltage(0, 0, 0);
+    _delay(200);
+    // determine the direction the sensor moved
+   
+    int directionSensor;
+    if (mid_angle < end_angle) {
+      Serial.println("MOT: sensor_direction==CCW");
+      directionSensor = -1;
+      motor.sensor_direction = Direction::CCW;
+
+    } else{
+      Serial.println("MOT: sensor_direction==CW");
+      directionSensor = 1;
+      motor.sensor_direction = Direction::CW;
+
+    }
+
+
+    
+    //motor.zero_electric_angle = 0; // Set position sensor offset
+
     //Set voltage angle to zero, wait for rotor position to settle
     for(int i = 0; i<40000; i++)
         {
@@ -69,7 +112,8 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
     _wrapped.update();
     float theta_init = _wrapped.getAngle();
     float theta_absolute_init = _wrapped.getMechanicalAngle();
-
+    Serial.print("Init mechanical angle: ");
+    Serial.println(theta_absolute_init);
     /* 
     
     Start Calibration
@@ -98,8 +142,18 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
             _delay(20);
             _wrapped.update();
             theta_actual = _wrapped.getAngle()-theta_init;
+            Serial.println(_wrapped.getMechanicalAngle());
+            if (directionSensor == -1)
+            {
+                theta_actual = -theta_actual;
+                error_f[i] = theta_actual - elec_angle/NPP;
+
+            }
+            else
+            {
+                error_f[i] = elec_angle/NPP - theta_actual;
+            }
             // if overflow happened track it as full rotation
-            error_f[i] = elec_angle/NPP - theta_actual;
             raw_f[i] = theta_actual;
 
             // storing the normalized angle every time the electrical angle 3PI/2 to calculate average zero electrical angle
@@ -111,11 +165,11 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
                 }
             
             // only temporary printing for debugging
-            Serial.print(elec_angle/(NPP),5);
-            Serial.print("\t");
-            Serial.print(theta_actual,5);
-            Serial.print("\t");
-            Serial.println(error_f[i],5);
+            //Serial.print(elec_angle/(NPP),5);
+            //Serial.print("\t");
+            //Serial.print(theta_actual,5);
+            //Serial.print("\t");
+            //Serial.println(error_f[i],5);
         }
             
 
@@ -137,20 +191,30 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
                 _delay(20);
                 _wrapped.update();
                 theta_actual = _wrapped.getAngle()-theta_init;
+                Serial.println(_wrapped.getMechanicalAngle());
+                if (directionSensor == -1)
+                {
+                theta_actual = -theta_actual;
+                error_b[i] =  theta_actual - elec_angle/NPP;
+                }
+                else
+                {
                 error_b[i] = elec_angle/NPP - theta_actual;
+                }
                 raw_b[i] = theta_actual;
 
                 // only temporary printing for debugging
-                Serial.print(elec_angle/(NPP),5);
-                Serial.print("\t");
-                Serial.print(theta_actual,5);
-                Serial.print("\t");
-                Serial.println(error_b[i],5);
+                //Serial.print(elec_angle/(NPP),5);
+                //Serial.print("\t");
+                //Serial.print(theta_actual,5);
+                //Serial.print("\t");
+                //Serial.println(error_b[i],5);
         }
 
         _wrapped.update();
         theta_absolute_post = _wrapped.getMechanicalAngle();
-
+        Serial.print("Post mechanical angle: ");
+        Serial.println(_wrapped.getMechanicalAngle());
         // done with the measurement
         isMeasuring=false;
         motor.setPhaseVoltage(0, 0, 0);
@@ -193,9 +257,12 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
         Serial.println(" Lookup Index : Lookup Value");
         // Build Look Up Table
         for (int i = 0; i<n_lut; i++){                                          
-            int ind =  index_offset + i;
+            int ind =  index_offset + i*directionSensor;
             if(ind > (n_lut-1)){ 
                 ind -= n_lut;
+            }
+            if(ind < 0 ){
+                ind += n_lut;
             }
             calibrationLut[ind] = (float) (error_filt[i*NPP] - mean);
             Serial.print(ind);
@@ -204,7 +271,14 @@ void CalibratedSensor::calibrate(BLDCMotor& motor){
             _delay(1);
         }
    
-   
+
+    // clear memory
+    delete[] error_f;     
+    delete[] error_b;
+    delete[] error;
+    delete[] error_filt;
+    delete[] raw_f;
+    delete[] raw_b;
     Serial.println("Sensor Calibration Done.");
 
 
