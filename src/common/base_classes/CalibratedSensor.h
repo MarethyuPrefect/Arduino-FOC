@@ -42,29 +42,30 @@ protected:
     */
     Sensor& _wrapped;
 
-    // Init inital angles
-    float theta_actual { 0 };
-    float elecAngle { 0 };
-    
-    // Hardware related
-    int CPR = 16384;                                    // number of counts per revolution --> to be retrieved from Sensor instance
-    int NPP = 11;                                       // number of pole pairs --> to be retrieved from BLDC motor --> to be checked            
-    int phaseVoltageQ = 6;                              // voltage to run the calibration with
-        
+
+    int NPP = 11;
     const int n = 128*NPP;                              // number of positions to be sampled per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
     const int n2 = 40;                                  // increments between saved samples (for smoothing motion)
-    
     float deltaElectricalAngle = _2PI*NPP/(n*n2);       // Electrical Angle increments for calibration steps    
-
     // all variables for LUT & calibration yet to be fixed
-    const int  n_lut { 128 } ;                             // lut size, currently constant
     float* error_f  = new float[n]();                   // pointer to error array rotating forwards
     float* raw_f = new float[n]();                      // pointer to raw forward position
     float* error_b  = new float[n]();                   // pointer to error array rotating forwards
     float* raw_b = new float[n]();                      // pointer to raw backword position
     float* error = new float[n]();                      // pointer to error array (average of forward & backward)
     float*  error_filt = new float[n]();                // pointer to filtered error array (low pass filter)
-    const int window = 128;                             // moving avarage window
+    const int window = 128;     
+    
+    // Init inital angles
+    float theta_actual { 0 };
+    float elecAngle { 0 };
+    
+    // Hardware related
+    int phaseVoltageQ = 6;                              // voltage to run the calibration with
+    const int  n_lut { 128 } ;                          // lut size, currently constant
+
+  
+
 
     // For while loops to keep track of state --> homing to be added to guarentee the calibration always start at the zero encoder position.
     bool isMeasuring = true;

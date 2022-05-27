@@ -70,8 +70,15 @@ void setup() {
 
 void loop() {
 
+  motor.loopFOC();
+  motor.move(target_voltage);
+  command.run();
 
-  // running script to measure zero electrical angle at different positions. Should reproduce very well as a result of the calibration.
+
+
+  // run script to measure zero electrical angle at different positions
+  
+  /*
   int j = 0;
   for(int i = 0; i<100; i+=1)
   {
@@ -89,8 +96,8 @@ void loop() {
       _delay(500);
 
   } 
-  
-  // user communication
-  command.run();
+  */
+
+ 
 
 }
