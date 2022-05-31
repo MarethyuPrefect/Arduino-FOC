@@ -13,12 +13,12 @@ MagneticSensorSPI sensor = MagneticSensorSPI(AS5048_SPI, PB6);
 // BLDC motor & driver instance
 BLDCMotor motor = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(PB4,PC7,PB10,PA9);
-
 // instantiate the calibrated sensor object
 CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);
 
 // voltage set point variable
 float target_voltage = 2;
+
 // instantiate the commander
 Commander command = Commander(Serial);
 
@@ -38,7 +38,7 @@ void setup() {
   driver.init();
   motor.linkDriver(&driver);
   // aligning voltage 
-  motor.voltage_sensor_align = 5;
+  motor.voltage_sensor_align = 8;
   motor.voltage_limit = 20;
   // set motion control loop to be used
   motor.controller = MotionControlType::torque;
@@ -47,9 +47,14 @@ void setup() {
   Serial.begin(115200);
   // comment out if not needed
   motor.useMonitoring(Serial);
+  motor.monitor_variables =  _MON_VEL; 
+  motor.monitor_downsample = 10; // default 10
+
   // initialize motor
   motor.init();
 
+  // set voltage to run calibration
+  sensor_calibrated.voltage_calibration = 6;
   // Running calibration
   sensor_calibrated.calibrate(motor); 
 
@@ -64,6 +69,7 @@ void setup() {
   command.add('T', doTarget, "target voltage");
   
   Serial.println(F("Motor ready."));
+
   Serial.println(F("Set the target voltage using serial terminal:"));
   _delay(1000);
 }
@@ -73,31 +79,6 @@ void loop() {
   motor.loopFOC();
   motor.move(target_voltage);
   command.run();
-
-
-
-  // run script to measure zero electrical angle at different positions
-  
-  /*
-  int j = 0;
-  for(int i = 0; i<100; i+=1)
-  {
-      motor.zero_electric_angle  = NOT_SET;
-      motor.initFOC();
-      _delay(500);
-      Serial.println(motor.zero_electric_angle,4);
-      while (j < 1000)
-      {
-        motor.loopFOC();
-        motor.move(target_voltage);
-        j+=1;
-      }
-      j=0;
-      _delay(500);
-
-  } 
-  */
-
+  motor.monitor();
  
-
 }

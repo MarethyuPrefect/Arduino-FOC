@@ -3,6 +3,7 @@
 
 #include "common/base_classes/Sensor.h"
 #include "BLDCMotor.h"
+#include "common/base_classes/FOCMotor.h"
 
 
 class CalibratedSensor: public Sensor{
@@ -10,7 +11,6 @@ class CalibratedSensor: public Sensor{
 public:
     // constructor of class with pointer to base class sensor and driver
     CalibratedSensor(Sensor& wrapped);
-
 
     /*
     Override the update function
@@ -22,8 +22,8 @@ public:
     */
     virtual void calibrate(BLDCMotor& motor);
 
-    float* calibrationLut = new float[n_lut]();
-  
+    // voltage to run the calibration: user input
+    float voltage_calibration = 1;                              
 
 protected:
 
@@ -41,41 +41,20 @@ protected:
     * delegate instance of Sensor class
     */
     Sensor& _wrapped;
-
-
-    int NPP = 11;
-    const int n = 128*NPP;                              // number of positions to be sampled per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
-    const int n2 = 40;                                  // increments between saved samples (for smoothing motion)
-    float deltaElectricalAngle = _2PI*NPP/(n*n2);       // Electrical Angle increments for calibration steps    
-    // all variables for LUT & calibration yet to be fixed
-    float* error_f  = new float[n]();                   // pointer to error array rotating forwards
-    float* raw_f = new float[n]();                      // pointer to raw forward position
-    float* error_b  = new float[n]();                   // pointer to error array rotating forwards
-    float* raw_b = new float[n]();                      // pointer to raw backword position
-    float* error = new float[n]();                      // pointer to error array (average of forward & backward)
-    float*  error_filt = new float[n]();                // pointer to filtered error array (low pass filter)
-    const int window = 128;     
     
+     // lut size, currently constan. Perhaps to be made variable by user?
+    const int  n_lut { 128 } ;
+    // create pointer for lut memory
+    float* calibrationLut = new float[n_lut]();
+
     // Init inital angles
-    float theta_actual { 0 };
-    float elecAngle { 0 };
-    
-    // Hardware related
-    int phaseVoltageQ = 6;                              // voltage to run the calibration with
-    const int  n_lut { 128 } ;                          // lut size, currently constant
-
-  
-
-
-    // For while loops to keep track of state --> homing to be added to guarentee the calibration always start at the zero encoder position.
-    bool isMeasuring = true;
-    bool isHoming = true;
-
-    float elec_angle = 0.0;
-    float theta_absolute_post = 0.0;
-    float theta_absolute_init = 0.0;
-    float theta_init = 0.0;
-    float avg_elec_angle = 0.0;
+    float theta_actual { 0.0 };
+    float elecAngle { 0.0 };
+    float elec_angle { 0.0 };
+    float theta_absolute_post { 0.0 };
+    float theta_absolute_init { 0.0 };
+    float theta_init { 0.0 };
+    float avg_elec_angle { 0.0 };
 };
 
 #endif
