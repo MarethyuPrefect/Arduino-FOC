@@ -1,4 +1,4 @@
-#include "DRV8301.h"
+#include "GateDriver.h"
 
 // DRV8301 class constructor
 // mosi  DRV8301 SPI data in pin
@@ -7,14 +7,14 @@
 // cs  DRV8301 SPI chip select pin
 // en_gate   DRV8301 enable pin
 // fault  DRV8301 fault pin (pull_up)
-DRV8301::DRV8301(int mosi, int miso, int sclk, int cs, int en_gate, int fault)
+GateDriver::GateDriver(int mosi, int miso, int sclk, int cs, int en_gate, int fault)
 {
-    DRV8301::drv8301_mosi_pin = mosi;
-    DRV8301::drv8301_miso_pin = miso;
-    DRV8301::drv8301_sclk_pin = sclk;
-    DRV8301::drv8301_cs_pin = cs;
-    DRV8301::drv8301_en_gate_pin = en_gate;
-    DRV8301::drv8301_fault_pin = fault;
+    GateDriver::drv8301_mosi_pin = mosi;
+    GateDriver::drv8301_miso_pin = miso;
+    GateDriver::drv8301_sclk_pin = sclk;
+    GateDriver::drv8301_cs_pin = cs;
+    GateDriver::drv8301_en_gate_pin = en_gate;
+    GateDriver::drv8301_fault_pin = fault;
 }
 
 #pragma GCC push_options
@@ -23,7 +23,7 @@ DRV8301::DRV8301(int mosi, int miso, int sclk, int cs, int en_gate, int fault)
  * Use for SPI timing's delay function
  * It's only test on STM32F405/F407 168MHz
  */
-void DRV8301::spi_delay(void)
+void GateDriver::spi_delay(void)
 {
     for (int i = 0; i < 22; i++)
         ;
@@ -31,18 +31,18 @@ void DRV8301::spi_delay(void)
 #pragma GCC pop_options
 
 // SPI transfer 16 bit value
-uint16_t DRV8301::spi_transfer(uint16_t txdata)
+uint16_t GateDriver::spi_transfer(uint16_t txdata)
 {
     uint16_t rxdata = 0;
 
     for (int i = 0; i < 16; i++)
     {
-        digitalWrite(DRV8301::drv8301_mosi_pin, bitRead(txdata, 15 - i));
-        digitalWrite(DRV8301::drv8301_sclk_pin, HIGH);
-        DRV8301::spi_delay();
-        digitalWrite(DRV8301::drv8301_sclk_pin, LOW);
-        bitWrite(rxdata, 15 - i, digitalRead(DRV8301::drv8301_miso_pin));
-        DRV8301::spi_delay();
+        digitalWrite(GateDriver::drv8301_mosi_pin, bitRead(txdata, 15 - i));
+        digitalWrite(GateDriver::drv8301_sclk_pin, HIGH);
+        DRV8GateDriver301::spi_delay();
+        digitalWrite(GateDriver::drv8301_sclk_pin, LOW);
+        bitWrite(rxdata, 15 - i, digitalRead(GateDriver::drv8301_miso_pin));
+        GateDriver::spi_delay();
     }
 
     return rxdata;
